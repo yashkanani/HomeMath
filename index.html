@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Buy vs Rent Calculator</title>
+
+  <style>
+    :root {
+      --primary: #2563eb;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --border: #e5e7eb;
+      --text: #0f172a;
+      --muted: #64748b;
+      --success: #16a34a;
+      --danger: #dc2626;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    h2 {
+      margin: 0 0 16px;
+      font-size: 1.2rem;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      padding: 16px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    @media (min-width: 900px) {
+      .grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+      }
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    }
+
+    /* INPUTS */
+    .field {
+      margin-bottom: 14px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      font-size: 0.95rem;
+      transition: border 0.2s, box-shadow 0.2s;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+    /* REPORT */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    tr {
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 10px 6px;
+    }
+
+    td:last-child {
+      text-align: right;
+      font-weight: 600;
+    }
+
+    .total {
+      font-weight: 700;
+      background: #f1f5f9;
+    }
+
+    .loan-interest-row {
+      font-weight: 700;
+      background: #f6edeb;
+    }
+
+    .rent-row {
+      font-weight: 700;
+      background: #f2f6eb;
+    }
+
+    .positive {
+      color: var(--success);
+    }
+
+    .negative {
+      color: var(--danger);
+    }
+
+    .decision {
+      padding: 4px 10px;
+      border-radius: 999px;
+      color: white;
+      font-size: 0.8rem;
+      font-weight: 700;
+      display: inline-block;
+    }
+
+    .decision.yes {
+      background: var(--success);
+    }
+
+    .decision.no {
+      background: var(--danger);
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="grid">
+
+    <!-- INPUT -->
+    <div class="card">
+      <h2>Input</h2>
+
+      <div class="field">
+        <label>House Price</label>
+        <input id="homePrice" type="number" value="220000">
+      </div>
+
+      <div class="field">
+        <label>Down Payment (%)</label>
+        <input id="downPaymentPercent" type="number" value="3">
+      </div>
+
+      <div class="field">
+        <label>Loan Interest (%)</label>
+        <input id="loanInterest" type="number" value="6.5">
+      </div>
+
+      <div class="field">
+        <label>Return % on Down Payment</label>
+        <input id="dpReturnPercent" type="number" value="7">
+      </div>
+
+      <div class="field">
+        <label>HOA per Month</label>
+        <input id="hoaPerMonth" type="number" value="396">
+      </div>
+
+      <div class="field">
+        <label>Home Insurance per Year</label>
+        <input id="insurancePerYear" type="number" value="12">
+      </div>
+
+      <div class="field">
+        <label>Home Maintenance per Year</label>
+        <input id="maintenancePerYear" type="number" value="500">
+      </div>
+
+      <div class="field">
+        <label>Home Tax per Year</label>
+        <input id="taxPerYear" type="number" value="980">
+      </div>
+
+      <div class="field">
+        <label>Current Rent (Monthly)</label>
+        <input id="rentPerMonth" type="number" value="1450">
+      </div>
+    </div>
+
+    <!-- REPORT -->
+    <div class="card">
+      <h2>Report</h2>
+      <table>
+        <tbody id="reportTable"></tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const inputs = document.querySelectorAll("input");
+inputs.forEach(input => input.addEventListener("input", calculate));
+
+function v(id) {
+  return Number(document.getElementById(id).value) || 0;
+}
+
+function calculate() {
+  const homePrice = v("homePrice");
+  const dpPercent = v("downPaymentPercent");
+  const loanInterest = v("loanInterest");
+  const dpReturn = v("dpReturnPercent");
+  const hoaMonth = v("hoaPerMonth");
+  const insurance = v("insurancePerYear");
+  const maintenance = v("maintenancePerYear");
+  const tax = v("taxPerYear");
+  const rentMonth = v("rentPerMonth");
+
+  const downPayment = homePrice * dpPercent / 100;
+  const loanAmount = homePrice - downPayment;
+  const interestOnLoan = loanAmount * loanInterest / 100;
+  const interestOnDP = downPayment * dpReturn / 100;
+  const hoaYear = hoaMonth * 12;
+
+  const totalYearExpense =
+    interestOnLoan + hoaYear + insurance + maintenance + tax + interestOnDP;
+
+  const rentYear = rentMonth * 12;
+  const profitDifference = rentYear - totalYearExpense;
+  const shouldBuy = profitDifference > 0;
+
+  reportTable.innerHTML = `
+    <tr><td>House price</td><td>${homePrice}</td></tr>
+    <tr><td>Down Payment (%)</td><td>${dpPercent}</td></tr>
+    <tr><td>Down Payment</td><td>${downPayment.toFixed(0)}</td></tr>
+    <tr><td>Interest on Down Payment</td><td>${interestOnDP.toFixed(0)}</td></tr>
+    <tr><td>Loan Amount</td><td>${loanAmount.toFixed(0)}</td></tr>
+    <tr class="loan-interest-row"><td>Loan Interest</td><td>${interestOnLoan.toFixed(0)}</td></tr>
+    <tr><td>Insurance / Year</td><td>${insurance}</td></tr>
+    <tr><td>HOA / Month</td><td>${hoaMonth}</td></tr>
+    <tr><td>HOA / Year</td><td>${hoaYear}</td></tr>
+    <tr><td>Maintenance / Year</td><td>${maintenance}</td></tr>
+    <tr><td>Tax / Year</td><td>${tax}</td></tr>
+    <tr class="total"><td>Total Fix Year Expense</td><td>${totalYearExpense.toFixed(0)}</td></tr>
+    <tr><td>Rent / Month</td><td>${rentMonth}</td></tr>
+    <tr class="rent-row"><td>Rent / Year</td><td>${rentYear}</td></tr>
+    <tr>
+      <td>Profit Difference</td>
+      <td class="${profitDifference < 0 ? 'negative' : 'positive'}">
+        ${profitDifference.toFixed(0)}
+      </td>
+    </tr>
+    <tr>
+      <td>Should Inquire?</td>
+      <td>
+        <span class="decision ${shouldBuy ? 'yes' : 'no'}">
+          ${shouldBuy ? 'Yes' : 'No'}
+        </span>
+      </td>
+    </tr>
+  `;
+}
+
+calculate();
+</script>
+
+</body>
+</html>
