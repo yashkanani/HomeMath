@@ -146,6 +146,16 @@
     .decision.no {
       background: var(--danger);
     }
+
+    .reset-btn {
+      margin-top: 16px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: none;
+      background: #e5e7eb;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
   </style>
 </head>
 <body>
@@ -201,6 +211,8 @@
         <label>Current Rent (Monthly)</label>
         <input id="rentPerMonth" type="number" value="1450">
       </div>
+
+      <button class="reset-btn" onclick="resetData()">Reset All Values</button>
     </div>
 
     <!-- REPORT -->
@@ -216,10 +228,33 @@
 
 <script>
 const inputs = document.querySelectorAll("input");
-inputs.forEach(input => input.addEventListener("input", calculate));
+
+
+window.addEventListener("DOMContentLoaded", () => {
+  inputs.forEach(input => {
+    const saved = localStorage.getItem(input.id);
+    if (saved !== null) {
+      input.value = saved;
+    }
+  });
+  calculate();
+});
+
+/* Save on change */
+inputs.forEach(input => {
+  input.addEventListener("input", () => {
+    localStorage.setItem(input.id, input.value);
+    calculate();
+  });
+});
 
 function v(id) {
   return Number(document.getElementById(id).value) || 0;
+}
+
+function resetData() {
+  localStorage.clear();
+  location.reload();
 }
 
 function calculate() {
